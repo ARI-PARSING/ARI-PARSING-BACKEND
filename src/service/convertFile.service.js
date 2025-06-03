@@ -27,11 +27,14 @@ const fileConverter = async (filePath, fileType) => {
         case FILE_TYPES.TXT:
             data = readFileTxt(filePath);
             return convertCsvToListMap(data, ',');
-        default:
+        default: {
+            removeFile(filePath);
             throw new ServiceError(
                 `Unsupported file type: ${fileExtension}`,
                 Upload.UPLOAD_FILE_TYPE_NOT_SUPPORTED
             )
+
+        }
     }
 
 };
