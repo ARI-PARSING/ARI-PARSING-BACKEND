@@ -31,7 +31,7 @@ const convertXmlToListMap = (data, secretKey) => {
     return list.map(item => flattenToKeyValueList(item, secretKey));
 }
 
-const convertCsvToListMap = (data, delimiter) => {
+const convertCsvToListMap = (data, delimiter, secretKey) => {
     const lines = data.trim().split(/\r?\n/);
     if (lines.length < 2) throw new Error('CSV must have header and at least one row');
 
@@ -39,7 +39,10 @@ const convertCsvToListMap = (data, delimiter) => {
 
     return lines.slice(1).map(line => {
         const values = line.split(delimiter).map(v => v.trim());
-        return headers.map((key, i) => ({ key, value: values[i] ?? '' }));
+        return headers.map((key, i) => ({ 
+            key, 
+            value: key === "tarjeta" ? tokenStrategies.JWT_TARGET_CODE.generateToken(values[i],secretKey ).token : values[i]
+         }));
     });
 }
 
