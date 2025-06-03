@@ -1,5 +1,6 @@
 import { fileExists, readFileJson, readFileTxt, readFileXml, removeFile } from '../utils/fileHandler.util.js';
 import { convertCsvToListMap, convertJsonToListMap, convertXmlToListMap } from '../utils/mappingData.util.js';
+import FILE_TYPES from '../utils/constants/fileTypes.constant.js';
 import tokenStrategies from '../utils/security/jwt.security.util.js';
 import ServiceError from '../utils/errors/service.error.util.js';
 import Upload from '../utils/errors/codes/upload.codes.js';
@@ -14,13 +15,16 @@ const fileConverter = async (filePath, fileType) => {
 
     let data;
     switch (fileExtension.toLowerCase()) {
-        case 'json':
+        case FILE_TYPES.JSON:
             data = await readFileJson(filePath);
             return convertJsonToListMap(data);
-        case 'xml':
+        case FILE_TYPES.XML:
             data = await readFileXml(filePath);
             return convertXmlToListMap(data);
-        case 'csv':
+        case FILE_TYPES.CSV:
+            data = readFileTxt(filePath);
+            return convertCsvToListMap(data, ',');
+        case FILE_TYPES.TXT:
             data = readFileTxt(filePath);
             return convertCsvToListMap(data, ',');
         default:
@@ -32,10 +36,10 @@ const fileConverter = async (filePath, fileType) => {
 
 };
 
-const enryptedTargets = (file, secretKey)=>{
-    for(const register of file){
-        for(const item of register){
-            if(item.key == "tarjeta")
+const enryptedTargets = (file, secretKey) => {
+    for (const register of file) {
+        for (const item of register) {
+            if (item.key == "tarjeta")
                 item.value = tokenStrategies.JWT_TARGET_CODE.generateToken(item.value, secretKey).token;
         }
     }

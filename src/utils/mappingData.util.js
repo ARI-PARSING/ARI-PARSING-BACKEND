@@ -37,8 +37,21 @@ const convertCsvToListMap = (data, delimiter) => {
     });
 }
 
+const convertTXTToListMap = (data, delimiter) => {
+    const lines = data.trim().split(/\r?\n/);
+    if (lines.length < 2) throw new Error('TXT must have header and at least one row');
+
+    const headers = lines[0].split(delimiter).map(h => h.trim());
+
+    return lines.slice(1).map(line => {
+        const values = line.split(delimiter).map(v => v.trim());
+        return headers.map((key, i) => ({ key, value: values[i] ?? '' }));
+    });
+}
+
 export {
     convertJsonToListMap,
     convertXmlToListMap,
-    convertCsvToListMap
+    convertCsvToListMap,
+    convertTXTToListMap
 }
