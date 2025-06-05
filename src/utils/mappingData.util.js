@@ -5,11 +5,11 @@ import tokenStrategies from './security/jwt.security.util.js';
 const flattenToKeyValueList = (entries, secretKey) => {
     const flattenInformation = flattenObject(entries);
     return Object.entries(flattenInformation).map(([key, value]) => ({
-    key,
-    value: key === "tarjeta"
-      ? tokenStrategies.JWT_TARGET_CODE.generateToken(value, secretKey).token
-      : value,
-  }));
+        key,
+        value: key === "tarjeta"
+            ? tokenStrategies.JWT_TARGET_CODE.generateToken(value, secretKey).token
+            : value,
+    }));
 }
 
 const convertJsonToListMap = (data, secretKey) => {
@@ -31,7 +31,7 @@ const convertXmlToListMap = (data, secretKey) => {
     return list.map(item => flattenToKeyValueList(item, secretKey));
 }
 
-const convertCsvToListMap = (data, delimiter, secretKey) => {
+const convertCsvToListMap = (data, delimiter = ",", secretKey) => {
     const lines = data.trim().split(/\r?\n/);
     if (lines.length < 2) throw new Error('CSV must have header and at least one row');
 
@@ -39,15 +39,31 @@ const convertCsvToListMap = (data, delimiter, secretKey) => {
 
     return lines.slice(1).map(line => {
         const values = line.split(delimiter).map(v => v.trim());
-        return headers.map((key, i) => ({ 
-            key, 
-            value: key === "tarjeta" ? tokenStrategies.JWT_TARGET_CODE.generateToken(values[i],secretKey ).token : values[i]
-         }));
+        return headers.map((key, i) => ({
+            key,
+            value: key === "tarjeta" ? tokenStrategies.JWT_TARGET_CODE.generateToken(values[i], secretKey).token : values[i]
+        }));
+    });
+}
+
+const convertTXTToListMap = (data, delimiter = ";", secretKey) => {
+    const lines = data.trim().split(/\r?\n/);
+    if (lines.length < 2) throw new Error('TXT must have header and at least one row');
+
+    const headers = lines[0].split(delimiter).map(h => h.trim());
+
+    return lines.slice(1).map(line => {
+        const values = line.split(delimiter).map(v => v.trim());
+        return headers.map((key, i) => ({
+            key,
+            value: key === "tarjeta" ? tokenStrategies.JWT_TARGET_CODE.generateToken(values[i], secretKey).token : values[i]
+        }));
     });
 }
 
 export {
     convertJsonToListMap,
     convertXmlToListMap,
-    convertCsvToListMap
+    convertCsvToListMap,
+    convertTXTToListMap
 }
