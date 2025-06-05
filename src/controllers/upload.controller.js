@@ -1,13 +1,15 @@
 import createHttpError from "http-errors";
-import { fileConverter, fileLogs } from "../service/convertFile.service.js";
+import { fileParserService } from "../service/convertFile.service.js";
 import Upload from "../utils/errors/codes/upload.codes.js";
 
-const uploadFile = (req, res, next) => {
+const uploadFile = async (req, res, next) => {
   try {
     console.log("File upload request received");
-    fileLogs(req.file?.path, req.body.key);
+    const response = await fileParserService(req.file?.path, req.body.key, req.body.documentType, req.body.delimiter);
+    console.log("File processed successfully", response);
     return res.status(200).send({
       message: "File uploaded successfully",
+      data: response,
       path: req.file?.path,
       file: req.file,
     });
@@ -17,7 +19,7 @@ const uploadFile = (req, res, next) => {
         next(createHttpError(500, "Error processing file"));
         break;
       case Upload.UPLOAD_FILE_TYPE_NOT_SUPPORTED:
-        next(createHttpError(400,"Unsupported file type. Please upload a valid file."));
+        next(createHttpError(400, "Unsupported file type. Please upload a valid file."));
         break;
       default:
         next(e);

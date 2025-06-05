@@ -25,7 +25,7 @@ const convertXmlToListMap = (data) => {
     return list.map(flattenToKeyValueList);
 }
 
-const convertCsvToListMap = (data, delimiter) => {
+const convertCsvToListMap = (data, delimiter = ";") => {
     const lines = data.trim().split(/\r?\n/);
     if (lines.length < 2) throw new Error('CSV must have header and at least one row');
 
@@ -37,7 +37,7 @@ const convertCsvToListMap = (data, delimiter) => {
     });
 }
 
-const convertTXTToListMap = (data, delimiter) => {
+const convertTXTToListMap = (data, delimiter = ";") => {
     const lines = data.trim().split(/\r?\n/);
     if (lines.length < 2) throw new Error('TXT must have header and at least one row');
 

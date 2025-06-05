@@ -1,11 +1,12 @@
 import { fileExists, readFileJson, readFileTxt, readFileXml, removeFile } from '../utils/fileHandler.util.js';
 import { convertCsvToListMap, convertJsonToListMap, convertXmlToListMap } from '../utils/mappingData.util.js';
+import { convertDataToCvs, convertDataToJson, convertDataToTXT, convertDataToXML } from '../utils/dataParser.util.js';
 import FILE_TYPES from '../utils/constants/fileTypes.constant.js';
 import tokenStrategies from '../utils/security/jwt.security.util.js';
 import ServiceError from '../utils/errors/service.error.util.js';
 import Upload from '../utils/errors/codes/upload.codes.js';
 
-const fileConverter = async (filePath, fileType) => {
+const extractDataFromFiles = async (filePath, delimiter) => {
     if (!fileExists(filePath)) {
         console.error(`File not found: ${filePath}`);
         throw new Error(`File not found: ${filePath}`);
@@ -23,12 +24,12 @@ const fileConverter = async (filePath, fileType) => {
             return convertXmlToListMap(data);
         case FILE_TYPES.CSV:
             data = readFileTxt(filePath);
-            return convertCsvToListMap(data, ',');
+            return convertCsvToListMap(data, delimiter);
         case FILE_TYPES.TXT:
             data = readFileTxt(filePath);
-            return convertCsvToListMap(data, ',');
+            return convertCsvToListMap(data, delimiter);
         default: {
-            removeFile(filePath);
+            //removeFile(filePath);
             throw new ServiceError(
                 `Unsupported file type: ${fileExtension}`,
                 Upload.UPLOAD_FILE_TYPE_NOT_SUPPORTED
@@ -38,6 +39,24 @@ const fileConverter = async (filePath, fileType) => {
     }
 
 };
+
+const dataConverterToFile = async (data, fileType, delimiter) => {
+    switch (fileType.toLowerCase()) {
+        case FILE_TYPES.JSON:
+            return convertDataToJson(data);
+        case FILE_TYPES.XML:
+            return convertDataToXML(data);
+        case FILE_TYPES.CSV:
+            return convertDataToCvs(data, delimiter);
+        case FILE_TYPES.TXT:
+            return convertDataToTXT(data, delimiter);
+        default:
+            throw new ServiceError(
+                `Unsupported file type: ${fileType}`,
+                Upload.UPLOAD_FILE_TYPE_NOT_SUPPORTED
+            );
+    }
+}
 
 const enryptedTargets = (file, secretKey) => {
     for (const register of file) {
@@ -49,14 +68,19 @@ const enryptedTargets = (file, secretKey) => {
     return file;
 }
 
-const fileLogs = async (filePath, secretKey) => {
+const parseToNewFile = (data) => {
+    return Buffer.from(data, 'utf-8').toString('base64');
+}
+
+const fileParserService = async (filePath, secretKey, fileType, delimiter) => {
     console.log(`Processing file: ${filePath}`);
     try {
-        const result = await fileConverter(filePath);
-        const encryptedResult = enryptedTargets(result, secretKey);
-        console.log('Encrypted targets in file:', encryptedResult);
+        const result = await extractDataFromFiles(filePath, delimiter);
+        const parsedData = await dataConverterToFile(result, fileType, delimiter);
         console.log(`File processed successfully: ${filePath}`);
-        return encryptedResult;
+        console.log('Encrypted targets in file:', result);
+        console.log('Parsed data:', parsedData);
+        return parseToNewFile(parsedData);
     } catch (e) {
         throw new ServiceError(
             e.message || 'Error processing file',
@@ -69,6 +93,5 @@ const fileLogs = async (filePath, secretKey) => {
 }
 
 export {
-    fileConverter,
-    fileLogs
+    fileParserService
 }
