@@ -4,7 +4,6 @@ import Upload from "../utils/errors/codes/upload.codes.js";
 
 const uploadFile = async (req, res, next) => {
   try {
-    console.log("File upload request received");
     const response = await fileParserService(req.file?.path, req.body.key, req.body.documentType, req.body.delimiter);
     console.log("File processed successfully", response);
     return res.status(200).send({

@@ -1,16 +1,24 @@
-const convertDataToJson = (data) => {
-    const objects = data.map(entry =>
-        Object.fromEntries(entry.map(({ key, value }) => [key, value]))
-    );
-    return JSON.stringify(objects, null, 2);
+const convertDataToJson = (data) =>
+    JSON.stringify(data, null, 2);
 
-}
+
+const objectToXML = (obj) => {
+    if (typeof obj !== 'object' || obj === null) return obj;
+
+    return Object.entries(obj).map(([key, value]) => {
+        if (Array.isArray(value)) {
+            return value.map(item => `<${key}>${objectToXML(item)}</${key}>`).join('');
+        } else if (typeof value === 'object') {
+            return `<${key}>${objectToXML(value)}</${key}>`;
+        } else {
+            return `<${key}>${value}</${key}>`;
+        }
+    }).join('');
+};
 
 const convertDataToXML = (data) => {
-    const entries = data.map(entry => {
-        const fields = entry.map(({ key, value }) => `<${key}>${value}</${key}>`).join('');
-        return `<item>${fields}</item>`;
-    });
+    const array = Array.isArray(data) ? data : [data];
+    const entries = array.map(item => `<item>${objectToXML(item)}</item>`);
     return `<root>${entries.join('')}</root>`;
 }
 
