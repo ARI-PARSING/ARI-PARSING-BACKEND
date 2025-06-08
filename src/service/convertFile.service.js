@@ -39,7 +39,7 @@ const dataConverterToFile = async (data, resultFileExtension, currentFileExtensi
         case FILE_TYPES.JSON:
             return convertDataToJson(unflattenObject(data), currentFileExtension);
         case FILE_TYPES.XML:
-            return convertDataToXML(unflattenObject(data));
+            return convertDataToXML(unflattenObject(data), currentFileExtension);
         case FILE_TYPES.CSV:
             return convertDataToCvs(data, currentFileExtension, delimiter);
         case FILE_TYPES.TXT:

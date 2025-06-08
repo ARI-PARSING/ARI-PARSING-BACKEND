@@ -1,4 +1,4 @@
-import { polygonHandlerToCSV, polygonHandlerToJSON } from "./polygon.util.js";
+import { polygonHandlerToCSV, polygonHandlerToJSON, polygonHandlerToXML } from "./polygon.util.js";
 
 const convertDataToJson = (data, currentFileExtension) => {
     const transformed = Array.isArray(data)
@@ -19,25 +19,35 @@ const convertDataToJson = (data, currentFileExtension) => {
 }
 
 
-const objectToXML = (obj) => {
-    if (typeof obj !== 'object' || obj === null) return obj;
 
-    return Object.entries(obj).map(([key, value]) => {
+const objectToXML = (value, currentFileExtension) => {
+    if (typeof value !== 'object' || value === null) return value;
+
+    return Object.entries(value).map(([key, value]) => {
+        if (key.toLowerCase() === 'poligono') {
+            try {
+                const wkt = polygonHandlerToXML(value, currentFileExtension);
+                return `<${key}>${wkt}</${key}>`;
+            } catch (e) {
+                console.warn(`Error procesando polígono para XML: ${e.message}`);
+                return `<${key}></${key}>`; // valor vacío o maneja como desees
+            }
+        }
         if (Array.isArray(value)) {
-            return value.map(item => `<${key}>${objectToXML(item)}</${key}>`).join('');
+            return value.map(item => `<${key}>${objectToXML(item, currentFileExtension)}</${key}>`).join('');
         } else if (typeof value === 'object') {
-            return `<${key}>${objectToXML(value)}</${key}>`;
+            return `<${key}>${objectToXML(value, currentFileExtension)}</${key}>`;
         } else {
             return `<${key}>${value}</${key}>`;
         }
     }).join('');
 };
 
-const convertDataToXML = (data) => {
+const convertDataToXML = (data, currentFileExtension) => {
     const array = Array.isArray(data) ? data : [data];
-    const entries = array.map(item => `<item>${objectToXML(item)}</item>`);
+    const entries = array.map(item => `<item>${objectToXML(item, currentFileExtension)}</item>`);
     return `<root>${entries.join('')}</root>`;
-}
+};
 
 const convertDataToCvs = (data, currentFileExtension, delimiter = ";") => {
     console.log(data)

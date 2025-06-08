@@ -43,6 +43,44 @@ const polygonFromWKTtoGeoJSON = (wkt) => {
     };
 };
 
+const polygonFromGeoJSONToWKT = (value) => {
+    if (typeof value !== 'object' && !value.features && !value.features[0] && !value.features[0].geometry && value.features[0].geometry.type && value.features[0].geometry.type.toLowerCase() !== 'polygon') {
+        throw new Error('Invalid GeoJSON format');
+    }
+
+    console.log("value new val " + "\n\n\n\n");
+    console.dir(value, { depth: null });
+
+    console.log("value.features[0].geometry.coordinates " + value.features[0].geometry.coordinates[0]);
+
+    const coordinates = value.features[0].geometry.coordinates
+        .map(coord => {
+            console.log("coord " + coord);
+            return coord.join(' ')
+        }
+        )
+        .join(', ');
+
+    return `POLYGON ((${coordinates}))`;
+};
+
+const polygonFromCSVToWKT = (value) => {
+    if (typeof value !== 'string') return value;
+
+    if (value.trim().toUpperCase().startsWith('POLYGON ((') && value.trim().endsWith('))')) {
+        return value.trim();
+    }
+
+    const match = value.match(/\(\s*(.*?)\s*\)/);
+    if (!match) return value;
+
+    const coordinatePairs = match[1]
+        .split(',')
+        .map(pair => pair.trim().split(/\s+/));
+
+    return `POLYGON ((${coordinatePairs.map(pair => pair.join(' ')).join(', ')}))`;
+};
+
 export const polygonHandlerToCSV = (key, value, currentFileType) => {
     switch (currentFileType.toLowerCase()) {
         case FILE_TYPES.XML:
@@ -63,5 +101,17 @@ export const polygonHandlerToJSON = (value, currentFileType) => {
             return polygonFromWKTtoGeoJSON(value);
         default:
             throw new Error(`Unsupported file type: ${currentFileType}`);
+    }
+}
+
+export const polygonHandlerToXML = (value, currentFileExtension) => {
+    switch (currentFileExtension.toLowerCase()) {
+        case FILE_TYPES.JSON:
+            return polygonFromGeoJSONToWKT(value);
+        case FILE_TYPES.CSV:
+        case FILE_TYPES.TXT:
+            return polygonFromCSVToWKT(value);
+        default:
+            throw new Error(`Unsupported file type: ${currentFileExtension}`);
     }
 }
