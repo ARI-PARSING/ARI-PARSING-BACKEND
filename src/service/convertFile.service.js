@@ -6,7 +6,7 @@ import FILE_TYPES from '../utils/constants/fileTypes.constant.js';
 import ServiceError from '../utils/errors/service.error.util.js';
 import Upload from '../utils/errors/codes/upload.codes.js';
 
-const extractDataFromFiles = async (fileExtension, filePath, secretKey) => {
+const extractDataFromFiles = async (fileExtension, filePath, delimiter, secretKey) => {
     let data;
     switch (fileExtension.toLowerCase()) {
         case FILE_TYPES.JSON:
@@ -17,10 +17,10 @@ const extractDataFromFiles = async (fileExtension, filePath, secretKey) => {
             return convertXmlToListMap(data, secretKey);
         case FILE_TYPES.CSV:
             data = readFileTxt(filePath);
-            return convertCsvToListMap(data, ',', secretKey);
+            return convertCsvToListMap(data, delimiter, secretKey);
         case FILE_TYPES.TXT:
             data = readFileTxt(filePath);
-            return convertCsvToListMap(data, ',', secretKey);
+            return convertCsvToListMap(data, delimiter, secretKey);
         default: {
             if (fileExists(filePath))
                 removeFile(filePath);
@@ -82,7 +82,7 @@ const fileParserService = async (filePath, secretKey, fileType, delimiter) => {
             return parseToNewFile(readFileTxt(filePath));
         }
 
-        const result = await extractDataFromFiles(fileExtension, filePath, delimiter);
+        const result = await extractDataFromFiles(fileExtension, filePath, delimiter, secretKey);
         const parsedData = await dataConverterToFile(result, fileType, fileExtension, delimiter);
         console.log('Parsed data:', parsedData);
         console.log('Resulted object:', result);

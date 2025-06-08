@@ -41,25 +41,13 @@ const convertCsvToListMap = (data, delimiter = ",", secretKey) => {
         const values = line.split(delimiter).map(v => v.trim());
         return headers.map((key, i) => ({
             key,
-            value: key === "tarjeta" ? tokenStrategies.JWT_TARGET_CODE.generateToken(values[i], secretKey).token : values[i]
+            value: key === "tarjeta" ? tokenStrategies.JWT_TARGET_CODE.generateToken(values[i], secretKey).token :
+                typeof values[i] === 'string' ? values[i].replace(/^"|"$/g, '') : values[i]
         }));
     });
 }
 
-const convertTXTToListMap = (data, delimiter = ";", secretKey) => {
-    const lines = data.trim().split(/\r?\n/);
-    if (lines.length < 2) throw new Error('TXT must have header and at least one row');
-
-    const headers = lines[0].split(delimiter).map(h => h.trim());
-
-    return lines.slice(1).map(line => {
-        const values = line.split(delimiter).map(v => v.trim());
-        return headers.map((key, i) => ({
-            key,
-            value: key === "tarjeta" ? tokenStrategies.JWT_TARGET_CODE.generateToken(values[i], secretKey).token : values[i]
-        }));
-    });
-}
+const convertTXTToListMap = (data, delimiter = ";", secretKey) => convertCsvToListMap(data, delimiter, secretKey);
 
 export {
     convertJsonToListMap,

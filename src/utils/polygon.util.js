@@ -57,7 +57,9 @@ export const polygonHandlerToCSV = (key, value, currentFileType) => {
 
 export const polygonHandlerToJSON = (value, currentFileType) => {
     switch (currentFileType.toLowerCase()) {
-        case FILE_TYPES.XML || FILE_TYPES.CSV || FILE_TYPES.TXT:
+        case FILE_TYPES.XML:
+        case FILE_TYPES.CSV:
+        case FILE_TYPES.TXT:
             return polygonFromWKTtoGeoJSON(value);
         default:
             throw new Error(`Unsupported file type: ${currentFileType}`);
