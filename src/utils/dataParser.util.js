@@ -1,5 +1,22 @@
-const convertDataToJson = (data) =>
-    JSON.stringify(data, null, 2);
+import { polygonHandlerToCSV, polygonHandlerToJSON } from "./polygon.util.js";
+
+const convertDataToJson = (data, currentFileExtension) => {
+    const transformed = Array.isArray(data)
+        ? data.map(entry => ({
+            ...entry,
+            poligono: (typeof entry.poligono === 'string' && entry.poligono.includes('POLYGON'))
+                ? polygonHandlerToJSON(entry.poligono, currentFileExtension)
+                : entry.poligono
+        }))
+        : {
+            ...data,
+            poligono: (typeof data.poligono === 'string' && data.poligono.includes('POLYGON'))
+                ? polygonHandlerToJSON(data.poligono, currentFileExtension)
+                : data.poligono
+        };
+
+    return JSON.stringify(transformed, null, 2);
+}
 
 
 const objectToXML = (obj) => {
@@ -22,27 +39,29 @@ const convertDataToXML = (data) => {
     return `<root>${entries.join('')}</root>`;
 }
 
-const convertDataToCvs = (data, delimiter = ";") => {
+const convertDataToCvs = (data, currentFileExtension, delimiter = ";") => {
+    console.log(data)
     if (data.length === 0) return '';
 
-    const headers = data[0].map(({ key }) => key);
-    const rows = data.map(entry =>
-        entry.map(({ value }) => `"${value}"`).join(delimiter)
-    );
+    const headersSet = new Set();
+    data.forEach(entry => entry.map(({ key, _ }) => headersSet.add(key)));
+    const headers = [...headersSet];
+
+    const rows = data.map(entry => {
+
+        const entryMap = Object.fromEntries(entry.map(({ key, value }) => {
+            if (key.toString().toLowerCase() === "poligono") {
+                value = polygonHandlerToCSV(key, value, currentFileExtension);
+            }
+            return [key, value];
+        }));
+        return headers.map(header => `"${entryMap[header] ?? ''}"`).join(delimiter);
+    });
 
     return [headers.join(delimiter), ...rows].join('\n');
-}
+};
 
-const convertDataToTXT = (data, delimiter) => {
-    if (data.length === 0) return '';
-
-    const headers = data[0].map(({ key }) => key);
-    const rows = data.map(entry =>
-        entry.map(({ value }) => `"${value}"`).join(delimiter)
-    );
-
-    return [headers.join(delimiter), ...rows].join('\n');
-}
+const convertDataToTXT = (data, delimiter = ";") => convertDataToCvs(data, delimiter);
 
 export {
     convertDataToJson,

@@ -5,16 +5,8 @@ import { convertDataToCvs, convertDataToJson, convertDataToTXT, convertDataToXML
 import FILE_TYPES from '../utils/constants/fileTypes.constant.js';
 import ServiceError from '../utils/errors/service.error.util.js';
 import Upload from '../utils/errors/codes/upload.codes.js';
-import { parse } from 'dotenv';
 
-const extractDataFromFiles = async (filePath, secretKey) => {
-    if (!fileExists(filePath)) {
-        console.error(`File not found: ${filePath}`);
-        throw new Error(`File not found: ${filePath}`);
-    }
-
-    const fileExtension = filePath.split('.').pop().toLowerCase();
-
+const extractDataFromFiles = async (fileExtension, filePath, secretKey) => {
     let data;
     switch (fileExtension.toLowerCase()) {
         case FILE_TYPES.JSON:
@@ -42,27 +34,29 @@ const extractDataFromFiles = async (filePath, secretKey) => {
 
 };
 
-const dataConverterToFile = async (data, fileType, delimiter) => {
-    const dataConverted = unflattenObject(data);
-    switch (fileType.toLowerCase()) {
+const dataConverterToFile = async (data, resultFileExtension, currentFileExtension, delimiter) => {
+    switch (resultFileExtension.toLowerCase()) {
         case FILE_TYPES.JSON:
-            return convertDataToJson(dataConverted);
+            return convertDataToJson(unflattenObject(data), currentFileExtension);
         case FILE_TYPES.XML:
-            return convertDataToXML(dataConverted);
+            return convertDataToXML(unflattenObject(data));
         case FILE_TYPES.CSV:
-            return convertDataToCvs(dataConverted, delimiter);
+            return convertDataToCvs(data, currentFileExtension, delimiter);
         case FILE_TYPES.TXT:
-            return convertDataToTXT(dataConverted, delimiter);
+            return convertDataToTXT(data, currentFileExtension, delimiter);
         default:
             throw new ServiceError(
-                `Unsupported file type: ${fileType}`,
+                `Unsupported file type: ${resultFileExtension}`,
                 Upload.UPLOAD_FILE_TYPE_NOT_SUPPORTED
             );
     }
 }
 
-const isConvertionNeeded = (filePath, requestedConvertion) => {
-    const fileExtension = filePath.split('.').pop().toLowerCase();
+const isConvertionNeeded = (fileExtension, requestedConvertion) => {
+    if (fileExtension.toLowerCase() === FILE_TYPES.TXT && requestedConvertion.toLowerCase() === FILE_TYPES.CSV)
+        return false;
+    if (fileExtension.toLowerCase() === FILE_TYPES.CSV && requestedConvertion.toLowerCase() === FILE_TYPES.TXT)
+        return false;
     if (fileExtension.toLowerCase() === requestedConvertion.toLowerCase()) {
         return false;
     }
@@ -76,15 +70,22 @@ const parseToNewFile = (data) => {
 
 const fileParserService = async (filePath, secretKey, fileType, delimiter) => {
     try {
-        if (!isConvertionNeeded(filePath, fileType)) {
+        if (!fileExists(filePath)) {
+            console.error(`File not found: ${filePath}`);
+            throw new Error(`File not found: ${filePath}`);
+        }
+
+        const fileExtension = filePath.split('.').pop().toLowerCase();
+
+        if (!isConvertionNeeded(fileExtension, fileType)) {
             console.log(`No conversion needed for file: ${filePath}`);
             return parseToNewFile(readFileTxt(filePath));
         }
 
-        const result = await extractDataFromFiles(filePath, delimiter);
-        const parsedData = await dataConverterToFile(result, fileType, delimiter);
+        const result = await extractDataFromFiles(fileExtension, filePath, delimiter);
+        const parsedData = await dataConverterToFile(result, fileType, fileExtension, delimiter);
         console.log('Parsed data:', parsedData);
-        console.log('Flattened object:', result);
+        console.log('Resulted object:', result);
         return parseToNewFile(parsedData);
     } catch (e) {
         console.error(`Error processing file: ${filePath}`, e);
