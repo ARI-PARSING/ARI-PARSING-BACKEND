@@ -30,7 +30,7 @@ const objectToXML = (value, currentFileExtension) => {
                 return `<${key}>${wkt}</${key}>`;
             } catch (e) {
                 console.warn(`Error procesando polígono para XML: ${e.message}`);
-                return `<${key}></${key}>`; // valor vacío o maneja como desees
+                return `<${key}></${key}>`;
             }
         }
         if (Array.isArray(value)) {
@@ -55,7 +55,7 @@ const convertDataToCvs = (data, currentFileExtension, delimiter = ";") => {
     const headersSet = new Set();
     data.forEach(entry => entry.map(({ key, _ }) => {
         const k = key.toString().toLowerCase();
-        if (!k.includes("poligono") || k.includes("coordinates")) {
+        if (!k.includes("poligono") || k.includes("coordinates") || k === "poligono") {
             if (k.includes("coordinates"))
                 headersSet.add("poligono");
             else
@@ -69,7 +69,7 @@ const convertDataToCvs = (data, currentFileExtension, delimiter = ";") => {
 
         const entryMap = Object.fromEntries(entry.map(({ key, value }) => {
             const k = key.toString().toLowerCase();
-            if (k.includes("poligono") && k.includes("coordinates")) {
+            if (k.includes("poligono") && k.includes("coordinates") || k === "poligono") {
                 key = "poligono";
                 value = polygonHandlerToCSV(key, value, currentFileExtension);
             }

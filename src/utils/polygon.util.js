@@ -58,7 +58,7 @@ const polygonFromCSVToWKT = (value) => {
         return value.trim();
     }
 
-    const match = value.match(/\(\s*(.*?)\s*\)/);
+    const match = value.match(/\(\(\s*(.*?)\s*\)/);
     if (!match) return value;
 
     const coordinatePairs = match[1]
