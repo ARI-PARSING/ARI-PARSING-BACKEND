@@ -75,8 +75,6 @@ const convertDataToCvs = (data, currentFileExtension, delimiter = ";") => {
             }
             return [key, value];
         }));
-        console.log('Entry Map:', entryMap);
-        console.log('Headers:', headers);
         return headers.map(header => `"${entryMap[header] ?? ''}"`).join(delimiter);
     });
 
