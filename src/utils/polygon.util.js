@@ -13,12 +13,13 @@ const polygonFromXMLTOCSV = (key, value) => {
 const polygonFromWKTtoGeoJSON = (wkt) => {
     if (typeof wkt !== 'string') return wkt;
 
-    const match = wkt.match(/POLYGON\s*\(\(\s*(.*?)\s*\)\)/i) || wkt.match(/\(\s*(.*?)\s*\)/i);
-    if (!match) return wkt; // No es un POLYGON válido
+    const match = wkt.match(/POLYGON\s*\(\(\s*(.*?)\s*\)\)/i) || wkt.match(/\(\(\s*(.*?)\s*\)/i);
+    if (!match) return wkt;
 
     const coordinatePairs = match[1]
         .split(',')
         .map(pair => pair.trim().split(/\s+/))
+        .map(pair => pair.map(coord => parseFloat(coord)));
 
     return {
         type: "FeatureCollection",
@@ -43,25 +44,11 @@ const polygonFromWKTtoGeoJSON = (wkt) => {
     };
 };
 
-const polygonFromGeoJSONToWKT = (value) => {
-    if (typeof value !== 'object' && !value.features && !value.features[0] && !value.features[0].geometry && value.features[0].geometry.type && value.features[0].geometry.type.toLowerCase() !== 'polygon') {
-        throw new Error('Invalid GeoJSON format');
-    }
+const polygonFromGeoJSONToWKT = (value, currentFileType) => {
+    const coordinates = value.map(coord => coord.join(' '));
 
-    console.log("value new val " + "\n\n\n\n");
-    console.dir(value, { depth: null });
-
-    console.log("value.features[0].geometry.coordinates " + value.features[0].geometry.coordinates[0]);
-
-    const coordinates = value.features[0].geometry.coordinates
-        .map(coord => {
-            console.log("coord " + coord);
-            return coord.join(' ')
-        }
-        )
-        .join(', ');
-
-    return `POLYGON ((${coordinates}))`;
+    const needPolygon = currentFileType.toLowerCase() === FILE_TYPES.XML ? "POLYGON " : "";
+    return `${needPolygon}((${coordinates}))`;
 };
 
 const polygonFromCSVToWKT = (value) => {
@@ -86,8 +73,7 @@ export const polygonHandlerToCSV = (key, value, currentFileType) => {
         case FILE_TYPES.XML:
             return polygonFromXMLTOCSV(key, value);
         case FILE_TYPES.JSON:
-            polygonFromWKTtoGeoJSON(key, value);
-            break;
+            return polygonFromGeoJSONToWKT(value, FILE_TYPES.CSV);
         default:
             throw new Error(`Unsupported file type: ${currentFileType}`);
     }
@@ -107,7 +93,7 @@ export const polygonHandlerToJSON = (value, currentFileType) => {
 export const polygonHandlerToXML = (value, currentFileExtension) => {
     switch (currentFileExtension.toLowerCase()) {
         case FILE_TYPES.JSON:
-            return polygonFromGeoJSONToWKT(value);
+            return polygonFromGeoJSONToWKT(value, FILE_TYPES.XML);
         case FILE_TYPES.CSV:
         case FILE_TYPES.TXT:
             return polygonFromCSVToWKT(value);

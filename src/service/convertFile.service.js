@@ -71,8 +71,7 @@ const parseToNewFile = (data) => {
 const fileParserService = async (filePath, secretKey, fileType, delimiter) => {
     try {
         if (!fileExists(filePath)) {
-            console.error(`File not found: ${filePath}`);
-            throw new Error(`File not found: ${filePath}`);
+            throw new ServiceError(`File not found please check path coma mieda`, Upload.FILE_NOT_FOUND);
         }
 
         const fileExtension = filePath.split('.').pop().toLowerCase();

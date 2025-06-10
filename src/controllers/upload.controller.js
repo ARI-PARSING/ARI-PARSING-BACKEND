@@ -15,10 +15,13 @@ const uploadFile = async (req, res, next) => {
   } catch (e) {
     switch (e.code) {
       case Upload.PROCESSINGFILE_ERROR:
-        next(createHttpError(500, "Error processing file"));
+        next(createHttpError(500, e.message || "Error processing file"));
         break;
       case Upload.UPLOAD_FILE_TYPE_NOT_SUPPORTED:
         next(createHttpError(400, "Unsupported file type. Please upload a valid file."));
+        break;
+      case Upload.FILE_NOT_FOUND:
+        next(createHttpError(404, e.message || "File not found. Please check the file path."));
         break;
       default:
         next(e);

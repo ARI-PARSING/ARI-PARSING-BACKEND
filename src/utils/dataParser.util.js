@@ -4,13 +4,13 @@ const convertDataToJson = (data, currentFileExtension) => {
     const transformed = Array.isArray(data)
         ? data.map(entry => ({
             ...entry,
-            poligono: (typeof entry.poligono === 'string' && entry.poligono.includes('POLYGON'))
+            poligono: (typeof entry.poligono === 'string')
                 ? polygonHandlerToJSON(entry.poligono, currentFileExtension)
                 : entry.poligono
         }))
         : {
             ...data,
-            poligono: (typeof data.poligono === 'string' && data.poligono.includes('POLYGON'))
+            poligono: (typeof data.poligono === 'string')
                 ? polygonHandlerToJSON(data.poligono, currentFileExtension)
                 : data.poligono
         };
@@ -45,28 +45,41 @@ const objectToXML = (value, currentFileExtension) => {
 
 const convertDataToXML = (data, currentFileExtension) => {
     const array = Array.isArray(data) ? data : [data];
-    const entries = array.map(item => `<item>${objectToXML(item, currentFileExtension)}</item>`);
-    return `<root>${entries.join('')}</root>`;
+    const entries = array.map(item => `<cliente>${objectToXML(item, currentFileExtension)}</cliente>`);
+    return `<clientes>${entries.join('')}</clientes>`;
 };
 
 const convertDataToCvs = (data, currentFileExtension, delimiter = ";") => {
-    console.log(data)
     if (data.length === 0) return '';
 
     const headersSet = new Set();
-    data.forEach(entry => entry.map(({ key, _ }) => headersSet.add(key)));
+    data.forEach(entry => entry.map(({ key, _ }) => {
+        const k = key.toString().toLowerCase();
+        if (!k.includes("poligono") || k.includes("coordinates")) {
+            if (k.includes("coordinates"))
+                headersSet.add("poligono");
+            else
+                headersSet.add(key)
+        }
+
+    }));
     const headers = [...headersSet];
 
     const rows = data.map(entry => {
 
         const entryMap = Object.fromEntries(entry.map(({ key, value }) => {
-            if (key.toString().toLowerCase() === "poligono") {
+            const k = key.toString().toLowerCase();
+            if (k.includes("poligono") && k.includes("coordinates")) {
+                key = "poligono";
                 value = polygonHandlerToCSV(key, value, currentFileExtension);
             }
             return [key, value];
         }));
+        console.log('Entry Map:', entryMap);
+        console.log('Headers:', headers);
         return headers.map(header => `"${entryMap[header] ?? ''}"`).join(delimiter);
     });
+
 
     return [headers.join(delimiter), ...rows].join('\n');
 };
