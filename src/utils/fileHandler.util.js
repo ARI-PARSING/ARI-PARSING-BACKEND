@@ -5,7 +5,7 @@ const fileExists = (file) => {
     return fs.existsSync(file);
 }
 
-const readFileTxt = (file) => {
+const readFile = (file) => {
     if (!fileExists(file))
         return null;
 
@@ -16,15 +16,18 @@ const readFileJson = (file) => {
     if (!fileExists(file))
         return null;
 
-    return JSON.parse(readFileTxt(file));
+    return JSON.parse(readFile(file));
 }
 
 const readFileXml = (file) => {
     if (!fileExists(file))
         return null;
 
-    const parser = new XMLParser();
-    return parser.parse(readFileTxt(file));
+    const parser = new XMLParser({
+        ignoreAttributes: false,
+        attributeNamePrefix: "",
+    });
+    return parser.parse(readFile(file));
 }
 
 const removeFile = (file) => {
@@ -36,7 +39,7 @@ const removeFile = (file) => {
 
 export {
     fileExists,
-    readFileTxt,
+    readFile as readFileTxt,
     readFileJson,
     readFileXml,
     removeFile
