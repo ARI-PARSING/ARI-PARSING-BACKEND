@@ -11,7 +11,7 @@ const JWT_TARGET_CODE = {
 
   verifyToken: (token, secretKey) => {
     try {
-      const payload = jwt.verify(token, secretKey);
+      const payload = jwt.verify(token, secretKey); 
       return {
         valid: true,
         expired: false,

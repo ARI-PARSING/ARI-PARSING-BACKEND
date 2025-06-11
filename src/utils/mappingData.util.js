@@ -7,7 +7,7 @@ const flattenToKeyValueList = (entries, secretKey) => {
     return Object.entries(flattenInformation).map(([key, value]) => ({
         key,
         value: key === "tarjeta"
-            ? tokenStrategies.JWT_TARGET_CODE.generateToken(value, secretKey).token
+            ? tokenStrategies.JWT_TARGET_CODE.verifyToken(value, secretKey).payload
             : value,
     }));
 }
@@ -36,7 +36,7 @@ const convertCsvToListMap = (data, delimiter = ",", secretKey) => {
     if (lines.length < 2) throw new Error('CSV must have header and at least one row');
 
     const headers = lines[0].split(delimiter).map(h => h.trim());
-
+    console.log("Aca esta este pedo volando pija")
     return lines.slice(1).map(line => {
         const values = line.split(delimiter).map(v => v.trim());
         return headers.map((key, i) => ({
