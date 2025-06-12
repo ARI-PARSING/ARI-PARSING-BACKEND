@@ -83,8 +83,8 @@ const fileParserService = async (filePath, secretKey, fileType, delimiter) => {
         }
 
         const result = await extractDataFromFiles(fileExtension, filePath, delimiter, secretKey);
-        const processedResult = toggleCardEncryption(result, secretKey, decisionToEncrypt(fileExtension, fileType));
-        const parsedData = await dataConverterToFile(processedResult, fileType, fileExtension, delimiter);
+        //const processedResult = toggleCardEncryption(result, secretKey, decisionToEncrypt(fileExtension, fileType));
+        const parsedData = await dataConverterToFile(result, fileType, fileExtension, delimiter);
         // console.log('Parsed data:', parsedData);
         // console.log('Resulted object:', result);
         return parseToNewFile(parsedData);

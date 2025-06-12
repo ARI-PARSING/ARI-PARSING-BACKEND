@@ -45,9 +45,8 @@ const polygonFromWKTtoGeoJSON = (wkt) => {
 };
 
 const polygonFromGeoJSONToWKT = (value, currentFileType) => {
-    if (value === 'object' && value.features && value.features[0] && value.features[0].geometry && value.features[0].geometry.coordinates) return value;
-    const valueCoordinates = value.features[0].geometry.coordinates;
-    console.log(`valueCoordinates: ${JSON.stringify(valueCoordinates)}`);
+    const isObject = value === 'object' && value.features && value.features[0] && value.features[0].geometry && value.features[0].geometry.coordinates
+    const valueCoordinates = isObject ? value.features[0].geometry.coordinates : value;
 
     const coordinates = valueCoordinates.map(coord => coord.join(' '));
 
