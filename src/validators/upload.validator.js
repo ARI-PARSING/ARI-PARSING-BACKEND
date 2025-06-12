@@ -10,7 +10,7 @@ const uploadValidator = [
     .isString()
     .isLength({ min: 10, max: 20 })
     .withMessage(
-      "La clave de encriptación es requerida y debe tener 32 caracteres."
+      "La clave de encriptación es requerida y debe tener de 10 a 20 caracteres."
     )
     .matches(/^[A-Za-z0-9.,;:!?"'@#%&()\-_/+=$]*$/)
     .withMessage(
@@ -41,15 +41,15 @@ const uploadValidator = [
 
     //Los valores validos para el campo "pathFile" son: letras, números y algunos caracteres especiales( .,;:!?"'@#%&()\-_/+=$).
     //ejemplo: C:\Users\Usuario\Documents\archivo.txt o /home/usuario/documentos/archivo.txt
-  body("pathFile")
-    .notEmpty()
-    .isString()
-    .isLength({ min: 1, max: 255 })
-    .matches(/^(?:[a-zA-Z]:\\|\/)?(?:[\w\s.-]+[\/\\]?)*$/)
-    .withMessage(
-      "La ruta del archivo debe ser una cadena de texto válida y no puede estar vacía."
-    )
-    .bail(),
+  // body("pathFile")
+  //   .notEmpty()
+  //   .isString()
+  //   .isLength({ min: 1, max: 255 })
+  //   .matches(/^(?:[a-zA-Z]:\\|\/)?(?:[\w\s.-]+[\/\\]?)*$/)
+  //   .withMessage(
+  //     "La ruta del archivo debe ser una cadena de texto válida y no puede estar vacía."
+  //   )
+  //   .bail(),
 ];
 
 export {
