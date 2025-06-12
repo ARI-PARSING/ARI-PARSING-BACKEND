@@ -83,8 +83,8 @@ const fileParserService = async (filePath, secretKey, fileType, delimiter) => {
 
         const result = await extractDataFromFiles(fileExtension, filePath, delimiter, secretKey);
         const parsedData = await dataConverterToFile(result, fileType, fileExtension, delimiter);
-        console.log('Parsed data:', parsedData);
-        console.log('Resulted object:', result);
+        //console.log('Parsed data:', parsedData);
+        //console.log('Resulted object:', result);
         return parseToNewFile(parsedData);
     } catch (e) {
         console.error(`Error processing file: ${filePath}`, e);

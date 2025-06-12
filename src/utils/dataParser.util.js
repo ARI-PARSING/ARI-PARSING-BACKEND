@@ -24,6 +24,7 @@ const objectToXML = (value, currentFileExtension) => {
     if (typeof value !== 'object' || value === null) return value;
 
     return Object.entries(value).map(([key, value]) => {
+        console.log(`Processing key: ${key}, value: ${value}`);
         if (key.toLowerCase() === 'poligono') {
             try {
                 const wkt = polygonHandlerToXML(value, currentFileExtension);

@@ -45,7 +45,11 @@ const polygonFromWKTtoGeoJSON = (wkt) => {
 };
 
 const polygonFromGeoJSONToWKT = (value, currentFileType) => {
-    const coordinates = value.map(coord => coord.join(' '));
+    if (value === 'object' && value.features && value.features[0] && value.features[0].geometry && value.features[0].geometry.coordinates) return value;
+    const valueCoordinates = value.features[0].geometry.coordinates;
+    console.log(`valueCoordinates: ${JSON.stringify(valueCoordinates)}`);
+
+    const coordinates = valueCoordinates.map(coord => coord.join(' '));
 
     const needPolygon = currentFileType.toLowerCase() === FILE_TYPES.XML ? "POLYGON " : "";
     return `${needPolygon}((${coordinates}))`;
