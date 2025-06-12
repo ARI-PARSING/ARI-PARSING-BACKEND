@@ -1,4 +1,3 @@
-// src/utils/fileHandler.test.js
 import fs from 'fs';
 import { XMLParser } from 'fast-xml-parser';
 import { fileExists, readFileTxt, readFileJson, readFileXml, removeFile, } from './fileHandler.util.js';
