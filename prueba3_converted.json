@@ -1,0 +1,16 @@
+[
+  {
+    "documento": "03110567-7",
+    "nombres": "Jaime Roberto",
+    "apellidos": "Climaco Navarrete",
+    "tipo": "GOLD",
+    "telefono": 22779898
+  },
+  {
+    "documento": "02130544-1",
+    "nombres": "Ana María",
+    "apellidos": "López Martínez",
+    "tipo": "PLATINUM",
+    "telefono": 22224444
+  }
+]
