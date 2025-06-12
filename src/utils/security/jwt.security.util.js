@@ -19,7 +19,9 @@ const JWT_TARGET_CODE = {
       };
     } catch (e) {
       console.log("JWT verification failed:", e.message);
-      return token;
+      return {
+        payload: token
+      };
     }
   },
 };
