@@ -11,21 +11,16 @@ const JWT_TARGET_CODE = {
 
   verifyToken: (token, secretKey) => {
     try {
-      const payload = jwt.verify(token, secretKey);
+      const payload = jwt.verify(token, secretKey); 
       return {
         valid: true,
         expired: false,
         payload,
       };
     } catch (e) {
-      let message = "Token verification failed";
-      if (e instanceof jwt.JsonWebTokenError) {
-        message = e.message;
-      }
+      console.log("JWT verification failed:", e.message);
       return {
-        valid: false,
-        expired: false,
-        message: message,
+        payload: token
       };
     }
   },

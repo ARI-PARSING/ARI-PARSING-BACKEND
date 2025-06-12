@@ -5,6 +5,7 @@ import { convertDataToCvs, convertDataToJson, convertDataToTXT, convertDataToXML
 import FILE_TYPES from '../utils/constants/fileTypes.constant.js';
 import ServiceError from '../utils/errors/service.error.util.js';
 import Upload from '../utils/errors/codes/upload.codes.js';
+import tokenStrategies from '../utils/security/jwt.security.util.js';
 
 const extractDataFromFiles = async (fileExtension, filePath, delimiter, secretKey) => {
     let data;
@@ -77,17 +78,18 @@ const fileParserService = async (filePath, secretKey, fileType, delimiter) => {
         const fileExtension = filePath.split('.').pop().toLowerCase();
 
         if (!isConvertionNeeded(fileExtension, fileType)) {
-            console.log(`No conversion needed for file: ${filePath}`);
+            // console.log(`No conversion needed for file: ${filePath}`);
             return parseToNewFile(readFileTxt(filePath));
         }
 
         const result = await extractDataFromFiles(fileExtension, filePath, delimiter, secretKey);
-        const parsedData = await dataConverterToFile(result, fileType, fileExtension, delimiter);
-        //console.log('Parsed data:', parsedData);
-        //console.log('Resulted object:', result);
+        const processedResult = toggleCardEncryption(result, secretKey, decisionToEncrypt(fileExtension, fileType));
+        const parsedData = await dataConverterToFile(processedResult, fileType, fileExtension, delimiter);
+        // console.log('Parsed data:', parsedData);
+        // console.log('Resulted object:', result);
         return parseToNewFile(parsedData);
     } catch (e) {
-        console.error(`Error processing file: ${filePath}`, e);
+        // console.error(`Error processing file: ${filePath}`, e);
         throw new ServiceError(
             e.message || 'Error processing file',
             e.code || Upload.PROCESSINGFILE_ERROR,
@@ -98,6 +100,42 @@ const fileParserService = async (filePath, secretKey, fileType, delimiter) => {
         console.log(`Temporary file removed: ${filePath}`);
     }
 }
+
+const decisionToEncrypt = (fileExtension, fileType) => {
+    const from = fileExtension.toLowerCase();
+    const to = fileType.toLowerCase();
+
+    if (
+        (from === FILE_TYPES.JSON && to === FILE_TYPES.XML) ||
+        (from === FILE_TYPES.XML && to === FILE_TYPES.JSON)
+    ) {
+        return null;
+    }
+
+    const comesEncrypted = [FILE_TYPES.JSON, FILE_TYPES.XML].includes(from);
+    const shouldEncrypt = [FILE_TYPES.JSON, FILE_TYPES.XML].includes(to);
+
+    return !comesEncrypted && shouldEncrypt;
+}
+
+const toggleCardEncryption = (data, secretKey, shouldEncrypt) => {
+    // console.log("shouldEncrypt:", shouldEncrypt);
+    return data.map(entryArray => {
+        return entryArray.map(item => {
+            if (item.key === 'tarjeta' && shouldEncrypt !== null) {
+                return {
+                    ...item,
+                    value: shouldEncrypt
+                        ? tokenStrategies.JWT_TARGET_CODE.generateToken(item.value, secretKey).token
+                        : tokenStrategies.JWT_TARGET_CODE.verifyToken(item.value, secretKey).payload
+                };
+            }
+            return item;
+        });
+    });
+};
+
+
 
 export {
     fileParserService
