@@ -64,9 +64,10 @@ const isConvertionNeeded = (fileExtension, requestedConvertion) => {
     return true;
 }
 
-const parseToNewFile = (data) => {
-    return Buffer.from(data, 'utf-8').toString('base64');
-}
+const parseToNewFile = async (data) => {
+    const content = await data; // Asegúrate de esperar la promesa
+    return Buffer.from(content, 'utf-8').toString('base64');
+};
 
 const fileParserService = async (filePath, secretKey, fileType, delimiter) => {
     try {
