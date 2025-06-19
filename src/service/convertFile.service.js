@@ -72,7 +72,7 @@ const parseToNewFile = (data) => {
 const fileParserService = async (filePath, secretKey, fileType, delimiter) => {
     try {
         if (!fileExists(filePath)) {
-            throw new ServiceError(`File not found please check path coma mieda`, Upload.FILE_NOT_FOUND);
+            throw new ServiceError(`File not found please check path`, Upload.FILE_NOT_FOUND);
         }
 
         const fileExtension = filePath.split('.').pop().toLowerCase();
@@ -119,20 +119,20 @@ const decisionToEncrypt = (fileExtension, fileType) => {
 }
 
 const toggleCardEncryption = (data, secretKey, shouldEncrypt) => {
-  // console.log("shouldEncrypt:", shouldEncrypt);
-  return data.map(entryArray => {
-    return entryArray.map(item => {
-      if (item.key === 'tarjeta' && shouldEncrypt !== null) {
-        return {
-          ...item,
-          value: shouldEncrypt
-            ? tokenStrategies.JWT_TARGET_CODE.generateToken(item.value, secretKey).token
-            : tokenStrategies.JWT_TARGET_CODE.verifyToken(item.value, secretKey).payload
-        };
-      }
-      return item;
+    // console.log("shouldEncrypt:", shouldEncrypt);
+    return data.map(entryArray => {
+        return entryArray.map(item => {
+            if (item.key === 'tarjeta' && shouldEncrypt !== null) {
+                return {
+                    ...item,
+                    value: shouldEncrypt
+                        ? tokenStrategies.JWT_TARGET_CODE.generateToken(item.value, secretKey).token
+                        : tokenStrategies.JWT_TARGET_CODE.verifyToken(item.value, secretKey).payload
+                };
+            }
+            return item;
+        });
     });
-  });
 };
 
 
